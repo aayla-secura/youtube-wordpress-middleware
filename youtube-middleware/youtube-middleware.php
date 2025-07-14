@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name:       YouTube Middleware
- * Plugin URI:        TODO
- * Version:           1.0.0
+ * Plugin URI:        https://github.com/aayla-secura/youtube-wordpress-middleware
+ * Version:           1.0.1
  * Author:            Aayla Secura
  * Author URI:        https://github.com/aayla-secura/
  * Requires at least: 6.5
  * Requires PHP:      7.4
- * Tested up to:      6.7.2
+ * Tested up to:      6.8.1
  *
  * @package YouTube-Middleware
  */
@@ -32,6 +32,7 @@ class YouTubeMiddleware
   const OPTION_NAME = 'youtube_middleware_options';
   const FIELD_API_KEY = 'api_key';
   const FIELD_ENABLED_ENDPOINTS = 'enabled_endpoints';
+  const FIELD_ALLOWED_PARAMETERS = 'allowed_parameters';
   const FIELD_PARAM_KEY_VALUE_PAIRS = 'param_key_value_pairs';
   const PAGE_SLUG = 'youtube-middleware';
   const ENDPOINTS = [
@@ -137,6 +138,18 @@ class YouTubeMiddleware
     );
 
     add_settings_field(
+      self::FIELD_ALLOWED_PARAMETERS,
+      'Allowed Parameters',
+      fn ( $args ) => $this->allowed_parameters_callback( $args ),
+      self::PAGE_SLUG,
+      'youtube_middleware_general_section',
+      [
+        'label_for' => self::FIELD_ALLOWED_PARAMETERS,
+        'class' => 'youtube-middleware-allowed-parameters-field',
+      ]
+    );
+
+    add_settings_field(
       self::FIELD_PARAM_KEY_VALUE_PAIRS,
       'Parameter Restrictions',
       fn ( $args ) => $this->param_key_value_pairs_callback( $args ),
@@ -184,6 +197,18 @@ class YouTubeMiddleware
   }
 
   /**
+   * Renders the input fields for user-defined allowed parameters.
+   *
+   * @param array $args Arguments passed from add_settings_field.
+   * @return void
+   */
+  private function allowed_parameters_callback( $args )
+  {
+    $allowed_params = $this->get_allowed_parameters();
+    include $this->get_plugin_path('templates/settings/allowed-params.php');
+  }
+
+  /**
    * Renders the input fields for user-defined key-value pairs.
    *
    * @param array $args Arguments passed from add_settings_field.
@@ -221,6 +246,14 @@ class YouTubeMiddleware
       // If no checkboxes are submitted, set all to 0
       foreach ( self::ENDPOINTS as $endpoint_key => $endpoint_label ) {
         $new_input[ self::FIELD_ENABLED_ENDPOINTS ][ $endpoint_key ] = 0;
+      }
+    }
+
+    // Sanitize allowed parameters
+    $new_input[ self::FIELD_ALLOWED_PARAMETERS ] = [];
+    if ( isset( $input[ self::FIELD_ALLOWED_PARAMETERS ] ) && is_array( $input[ self::FIELD_ALLOWED_PARAMETERS ] ) ) {
+      foreach ( $input[ self::FIELD_ALLOWED_PARAMETERS ] as $param ) {
+        $new_input[ self::FIELD_ALLOWED_PARAMETERS ][] = sanitize_text_field( $param );
       }
     }
 
@@ -397,6 +430,16 @@ class YouTubeMiddleware
   }
 
   /**
+   * Retrieves the user-defined list of allowed parameters pairs from the settings.
+   *
+   * @return array
+   */
+  private function get_allowed_parameters() {
+    $options = get_option( self::OPTION_NAME );
+    return $options[ self::FIELD_ALLOWED_PARAMETERS ] ?? [];
+  }
+
+  /**
    * Retrieves the user-defined parameter restrictions key-value pairs from the settings.
    *
    * @return array
@@ -467,8 +510,6 @@ class YouTubeMiddleware
       ],
     ];
 
-    $param_restrictions = $this->get_param_restrictions();
-
     foreach ( $query_params as $name => $value ) {
       if ( is_null( $value ) ) {
         continue;
@@ -477,13 +518,22 @@ class YouTubeMiddleware
       if ( array_key_exists( $name, $grouped_result ) ) {
         $grouped_result[ $name ] = $value;
       } else {
-        if ( ! $this->is_param_valid( $value, $param_restrictions[ $name ] ?? '') ) {
+        if ( ! $this->is_param_allowed( $name ) ) {
+          return new WP_Error(
+            'youtube_middleware_forbidden_param',
+            'Forbidden parameter',
+            [ 'status' => '400' ]
+          );
+        }
+
+        if ( ! $this->is_param_valid( $name, $value ) ) {
           return new WP_Error(
             'youtube_middleware_forbidden_value',
             'Forbidden value for parameter',
             [ 'status' => '400' ]
           );
         }
+
         $grouped_result[ '_args' ][ $name ] = $value;
       }
     }
@@ -492,20 +542,41 @@ class YouTubeMiddleware
   }
 
   /**
-   * Validates a comma-separated input against a comma-separated list of allowed values.
+   * Returns true if the given parameter name is allowed. 'key' is always
+   * allowed.
    *
-   * @param string $input
-   * @param string $allowed
+   * @param string $param The parameter name.
    *
    * @return bool
    */
-  private function is_param_valid( $input, $allowed )
+  private function is_param_allowed( $param )
   {
-    $allowed_values = preg_split( '/\s*,\s*/', $allowed, -1, PREG_SPLIT_NO_EMPTY );
-    $given_values = preg_split( '/\s*,\s*/', $input, -1, PREG_SPLIT_NO_EMPTY );
+    $allowed_params = $this->get_allowed_parameters();
+    return ! $allowed_params || $param === 'key' || in_array( $param, $allowed_params, true );
+  }
 
-    if ( ! $allowed_values ) { // any allowed
+  /**
+   * Validates a comma-separated input against a comma-separated list of allowed values.
+   *
+   * @param string $param The parameter name.
+   * @param string $input The user-supplied value.
+   *
+   * @return bool
+   */
+  private function is_param_valid( $param, $input )
+  {
+    $param_restrictions = $this->get_param_restrictions();
+    $allowed = $param_restrictions[ $param ] ?? null;
+
+    if ( is_null( $allowed ) ) { // any allowed
       return true;
+    }
+
+    $given_values = preg_split( '/\s*,\s*/', $input, -1, PREG_SPLIT_NO_EMPTY );
+    $allowed_values = preg_split( '/\s*,\s*/', $allowed, -1, PREG_SPLIT_NO_EMPTY );
+
+    if ( ! $allowed_values ) { // none allowed
+      return false;
     }
 
     $invalid = array_diff( $given_values, $allowed_values );

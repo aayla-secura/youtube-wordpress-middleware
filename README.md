@@ -5,7 +5,7 @@ To cache and serve results of YouTube API queries.
 1. Install the plugin.
 2. Set your API key in its settings page (alternatively provide it to each API query).
 3. Enabled the endpoints you want to enable.
-4. Optionally restrict certain parameter values such as `channelId` etc.
+4. Optionally apply parameter restrictions in settings.
 5. Use the REST API endpoints.
 
 # API endpoints
@@ -32,7 +32,3 @@ The list of supported endpoints is:
 - GET `/wp-json/youtube-middleware/v1/search` &#x2192; [Search: list](https://developers.google.com/youtube/v3/docs/search/list)
 - GET `/wp-json/youtube-middleware/v1/videoCategories` &#x2192; [VideoCategories: list](https://developers.google.com/youtube/v3/docs/videoCategories/list)
 - GET `/wp-json/youtube-middleware/v1/videos` &#x2192; [Videos: list](https://developers.google.com/youtube/v3/docs/videos/list)
-
-# TODO
-
-- A setting to allow only certain parameter names to be passed through.

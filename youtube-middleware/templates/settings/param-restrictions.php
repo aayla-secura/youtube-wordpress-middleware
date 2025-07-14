@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) || ! isset( $param_restrictions ) || ! isset( $args 
 </div>
 
 <button type="button" id="youtube-middleware-add-pair" class="button button-secondary">Add New Pair</button>
-<p class="description"><?php echo __( 'Define parameter key-value restrictions. Value is a comma-separated list of allowed values for each parameter. Click "Add New Pair" to add more.', 'youtube-middleware' ); ?></p>
+<p class="description"><?php echo __( 'Define parameter key-value restrictions. Value is a comma-separated list of allowed values for each parameter. Ommitted parameters are not validated. But if a parameter is given here with an empty value, then it is effectively forbidden.', 'youtube-middleware' ); ?></p>
 
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', function() {
