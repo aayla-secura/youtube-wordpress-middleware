@@ -8,6 +8,8 @@ To cache and serve results of YouTube API queries.
 4. Optionally apply parameter restrictions in settings.
 5. Use the REST API endpoints.
 
+<img width="948" height="579" alt="youtube-middleware-settings" src="https://github.com/user-attachments/assets/0f2b4f44-1e30-48b8-9860-341bc54a712c" />
+
 # API endpoints
 
 All API endpoints accept the following common parameters:
