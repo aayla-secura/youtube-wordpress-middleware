@@ -1,0 +1,8 @@
+parameters:
+    checkImplicitMixed: true
+    level: max
+    phpVersion: 70400
+    paths:
+        - youtube-middleware/
+    scanDirectories:
+       - vendor/php-stubs/
