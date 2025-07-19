@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Uninstall hook for YouTube Middleware plugin.
  *
@@ -9,8 +10,8 @@
  */
 
 // Exit if accessed directly or if not called during uninstall.
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-  exit;
+if (! defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
 }
 
-delete_option( 'youtube_middleware_options' );
+delete_option('youtube_middleware_options');
