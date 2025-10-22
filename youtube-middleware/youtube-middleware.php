@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       YouTube Middleware
  * Plugin URI:        https://github.com/aayla-secura/youtube-wordpress-middleware
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Aayla Secura
  * Author URI:        https://github.com/aayla-secura/
  * Requires at least: 6.5
@@ -334,7 +334,7 @@ class YouTubeMiddleware
 
         // Check if we have a cached result
         $cache_key = 'youtube_middleware_' . md5($endpoint . json_encode($args));
-        $cached_data = get_transient($cache_key);
+        $cached_data = $cache_duration > 0 ? get_transient($cache_key) : false;
         if ($cached_data !== false) {
             return $cached_data;
         }
@@ -407,7 +407,11 @@ class YouTubeMiddleware
             );
         }
 
-        set_transient($cache_key, $data, $cache_duration);
+        if ($cache_duration > 0) {
+            set_transient($cache_key, $data, $cache_duration);
+        } else {
+            delete_transient($cache_key);
+        }
         return new WP_REST_Response($data, 200);
     }
 
@@ -485,7 +489,7 @@ class YouTubeMiddleware
             'required' => false,
           ],
           'cacheDuration' => [
-            'description' => __("The duration in seconds to cache the results for. Only relevant if there's no cached result (default: 15 minutes).", 'youtube-middleware'),
+            'description' => __("The duration in seconds to cache the results for. Only relevant if there's no cached result. Set to 0 to disable cache. (default: 30 minutes).", 'youtube-middleware'),
             'type' => 'integer',
             'default' => MINUTE_IN_SECONDS * 30,
             'sanitize_callback' => 'absint',
