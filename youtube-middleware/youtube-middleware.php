@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       YouTube Middleware
  * Plugin URI:        https://github.com/aayla-secura/youtube-wordpress-middleware
- * Version:           1.0.2
+ * Version:           1.0.3
  * Author:            Aayla Secura
  * Author URI:        https://github.com/aayla-secura/
  * Requires at least: 6.5
@@ -344,6 +344,9 @@ class YouTubeMiddleware
 
         $response = wp_remote_get($api_url, [
           'timeout' => $timeout,
+          'headers' => [
+            'referer' => home_url()
+          ]
         ]);
         $http_code = wp_remote_retrieve_response_code($response);
 
