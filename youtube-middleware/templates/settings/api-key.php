@@ -8,7 +8,7 @@ if (! defined('ABSPATH') || ! isset($api_key) || ! is_string($api_key) || ! isse
 }
 
 printf(
-    '<input type="text" id="%s" name="%s[%s]" value="%s" class="regular-text" placeholder="Enter your YouTube Data API v3 key" />',
+    '<input type="text" id="%s" name="%s[%s]" value="%s" class="regular-text" placeholder="Your YouTube Data API v3 key" />',
     esc_attr($args['label_for']),
     esc_attr(YouTubeMiddleware::OPTION_NAME),
     esc_attr(YouTubeMiddleware::FIELD_API_KEY),

@@ -3,12 +3,12 @@
 /**
  * Plugin Name:       YouTube Middleware
  * Plugin URI:        https://github.com/aayla-secura/youtube-wordpress-middleware
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            Aayla Secura
  * Author URI:        https://github.com/aayla-secura/
  * Requires at least: 6.5
  * Requires PHP:      7.4
- * Tested up to:      6.8.1
+ * Tested up to:      6.9.1
  *
  * @package YouTube-Middleware
  */
@@ -32,6 +32,7 @@ class YouTubeMiddleware
     public const SETTINGS_GROUP = 'youtube_middleware_settings_group';
     public const OPTION_NAME = 'youtube_middleware_options';
     public const FIELD_API_KEY = 'api_key';
+    public const FIELD_MIN_CACHE_DURATION = 'min_cache_duration';
     public const FIELD_ENABLED_ENDPOINTS = 'enabled_endpoints';
     public const FIELD_ALLOWED_PARAMETERS = 'allowed_parameters';
     public const FIELD_PARAM_KEY_VALUE_PAIRS = 'param_key_value_pairs';
@@ -127,6 +128,18 @@ class YouTubeMiddleware
         );
 
         add_settings_field(
+            self::FIELD_MIN_CACHE_DURATION,
+            'Minimum Cache Duration',
+            fn($args) => $this->min_cache_duration_callback($args),
+            self::PAGE_SLUG,
+            'youtube_middleware_general_section',
+            [
+                'label_for' => self::FIELD_MIN_CACHE_DURATION,
+                'class' => 'youtube-middleware-min-cache-duration-field',
+            ],
+        );
+
+        add_settings_field(
             self::FIELD_ENABLED_ENDPOINTS,
             'Enabled API Endpoints',
             fn($args) => $this->enabled_endpoints_callback($args),
@@ -186,6 +199,18 @@ class YouTubeMiddleware
     }
 
     /**
+     * Renders the input field for the minimum cache duration.
+     *
+     * @param mixed $args Arguments passed from add_settings_field.
+     * @return void
+     */
+    private function min_cache_duration_callback($args)
+    {
+        $min_cache_duration = $this->get_min_cache_duration();
+        include $this->get_plugin_path('templates/settings/min-cache-duration.php');
+    }
+
+    /**
      * Renders the checkboxes for enabled API endpoints.
      *
      * @param mixed $args Arguments passed from add_settings_field.
@@ -239,6 +264,14 @@ class YouTubeMiddleware
         // Sanitize the API key field
         if (isset($input[ self::FIELD_API_KEY ])) {
             $new_input[ self::FIELD_API_KEY ] = sanitize_text_field($input[ self::FIELD_API_KEY ]);
+        }
+
+        // Sanitize the minimum cache duration field
+        if (isset($input[ self::FIELD_MIN_CACHE_DURATION ])) {
+            $val = $input[ self::FIELD_MIN_CACHE_DURATION ];
+            if (is_numeric($val)) {
+                $new_input[ self::FIELD_MIN_CACHE_DURATION ] = intval($val);
+            }
         }
 
         // Sanitize enabled endpoints
@@ -442,6 +475,17 @@ class YouTubeMiddleware
     }
 
     /**
+     * Retrieves the minimum cache duration from the settings.
+     *
+     * @return integer
+     */
+    private function get_min_cache_duration()
+    {
+        $options = get_option(self::OPTION_NAME);
+        return intval($options[ self::FIELD_MIN_CACHE_DURATION ] ?? 0);
+    }
+
+    /**
      * Retrieves the enabled API endpoints from the settings.
      *
      * @return array<string, number>
@@ -530,11 +574,11 @@ class YouTubeMiddleware
     {
         $query_params = $request->get_query_params();
 
-        /** @var array{ cacheDuration: int, timeout: int } $known_args */
-        $known_args = [
-            'cacheDuration' => MINUTE_IN_SECONDS * 30,
-            'timeout' => 10,
-        ];
+        $min_cache_duration = $this->get_min_cache_duration();
+
+        // defaults
+        $cache_duration = max(MINUTE_IN_SECONDS * 30, $min_cache_duration);
+        $timeout = 10;
 
         $extra_args = [
             'key' => $this->get_api_key(),
@@ -545,13 +589,22 @@ class YouTubeMiddleware
                 continue;
             }
 
-            if (array_key_exists($name, $known_args)) {
-                // cacheDuration or timeout
+            if ($name === 'cacheDuration') {
                 if (is_numeric($value)) {
-                    $known_args[ $name ] = intval($value);
+                    $cache_duration = intval($value);
+                    if ($cache_duration < $min_cache_duration) {
+                        return new WP_Error(
+                            'youtube_middleware_forbidden_value',
+                            'Cache duration is less than minimum allowed',
+                            [ 'status' => '400' ],
+                        );
+                    }
+                }
+            } elseif ($name === 'timeout') {
+                if (is_numeric($value)) {
+                    $timeout = intval($value);
                 }
             } else {
-                // extra args
                 if (! $this->is_param_allowed($name)) {
                     return new WP_Error(
                         'youtube_middleware_forbidden_param',
@@ -576,8 +629,8 @@ class YouTubeMiddleware
         $args_for_phpstan = $extra_args;
 
         return [
-            'cacheDuration' => $known_args['cacheDuration'],
-            'timeout' => $known_args['timeout'],
+            'cacheDuration' => $cache_duration,
+            'timeout' => $timeout,
             'args' => $args_for_phpstan,
         ];
     }
