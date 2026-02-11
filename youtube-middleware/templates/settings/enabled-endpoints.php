@@ -3,7 +3,7 @@
  * @package YouTube-Middleware
  */
 
-if (! defined('ABSPATH') || ! isset($enabled_endpoints) || ! isset($args)) {
+if (! defined('ABSPATH') || ! isset($enabled_endpoints) || ! is_array($enabled_endpoints) || ! isset($args) || ! is_array($args)) {
     die; // Exit if accessed directly
 }
 
@@ -15,7 +15,7 @@ foreach (YouTubeMiddleware::ENDPOINTS as $endpoint_key => $endpoint_label) {
         esc_attr(YouTubeMiddleware::OPTION_NAME),
         esc_attr(YouTubeMiddleware::FIELD_ENABLED_ENDPOINTS),
         checked(1, $enabled_endpoints[ $endpoint_key ] ?? 0, false),
-        esc_html($endpoint_label)
+        esc_html($endpoint_label),
     );
 }
 ?>

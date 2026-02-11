@@ -37,16 +37,16 @@ class YouTubeMiddleware
     public const FIELD_PARAM_KEY_VALUE_PAIRS = 'param_key_value_pairs';
     public const PAGE_SLUG = 'youtube-middleware';
     public const ENDPOINTS = [
-      'captions' => 'Captions: list',
-      'channelSections' => 'ChannelSections: list',
-      'channels' => 'Channels: list',
-      'comments' => 'Comments: list',
-      'commentThreads' => 'CommentThreads: list',
-      'playlistItems' => 'PlaylistItems: list',
-      'playlists' => 'Playlists: list',
-      'search' => 'Search: list',
-      'videoCategories' => 'VideoCategories: list',
-      'videos' => 'Videos: list',
+        'captions' => 'Captions: list',
+        'channelSections' => 'ChannelSections: list',
+        'channels' => 'Channels: list',
+        'comments' => 'Comments: list',
+        'commentThreads' => 'CommentThreads: list',
+        'playlistItems' => 'PlaylistItems: list',
+        'playlists' => 'Playlists: list',
+        'search' => 'Search: list',
+        'videoCategories' => 'VideoCategories: list',
+        'videos' => 'Videos: list',
     ];
 
     /**
@@ -71,9 +71,9 @@ class YouTubeMiddleware
      */
     private function __construct()
     {
-        add_action('admin_menu', fn () => $this->add_admin_menu());
-        add_action('admin_init', fn () => $this->register_settings());
-        add_action('rest_api_init', fn () => $this->register_endpoints());
+        add_action('admin_menu', fn() => $this->add_admin_menu());
+        add_action('admin_init', fn() => $this->register_settings());
+        add_action('rest_api_init', fn() => $this->register_endpoints());
     }
 
     /**
@@ -88,9 +88,9 @@ class YouTubeMiddleware
             'YouTube Middleware', // Menu title
             'manage_options', // Capability required to access
             self::PAGE_SLUG, // Menu slug
-            fn () => $this->display_settings_page(), // Callback function to render the page
+            fn() => $this->display_settings_page(), // Callback function to render the page
             'dashicons-youtube', // Icon URL or Dashicon
-            6 // Position in the menu
+            6, // Position in the menu
         );
     }
 
@@ -104,62 +104,62 @@ class YouTubeMiddleware
         register_setting(
             self::SETTINGS_GROUP,
             self::OPTION_NAME,
-            fn ($input) => $this->sanitize_settings_callback($input)
+            [ 'sanitize_callback' => fn($input) => $this->sanitize_settings_callback($input) ],
         );
 
         add_settings_section(
             'youtube_middleware_general_section',
             'General Settings',
-            fn () => $this->general_section_callback(),
-            self::PAGE_SLUG
+            fn() => $this->general_section_callback(),
+            self::PAGE_SLUG,
         );
 
         add_settings_field(
             self::FIELD_API_KEY,
             'YouTube API Key',
-            fn ($args) => $this->api_key_callback($args),
+            fn($args) => $this->api_key_callback($args),
             self::PAGE_SLUG,
             'youtube_middleware_general_section',
             [
-            'label_for' => self::FIELD_API_KEY,
-            'class' => 'youtube-middleware-api-key-field',
-      ]
+                'label_for' => self::FIELD_API_KEY,
+                'class' => 'youtube-middleware-api-key-field',
+            ],
         );
 
         add_settings_field(
             self::FIELD_ENABLED_ENDPOINTS,
             'Enabled API Endpoints',
-            fn ($args) => $this->enabled_endpoints_callback($args),
+            fn($args) => $this->enabled_endpoints_callback($args),
             self::PAGE_SLUG,
             'youtube_middleware_general_section',
             [
-            'label_for' => self::FIELD_ENABLED_ENDPOINTS,
-            'class' => 'youtube-middleware-enabled-endpoints-field',
-      ]
+                'label_for' => self::FIELD_ENABLED_ENDPOINTS,
+                'class' => 'youtube-middleware-enabled-endpoints-field',
+            ],
         );
 
         add_settings_field(
             self::FIELD_ALLOWED_PARAMETERS,
             'Allowed Parameters',
-            fn ($args) => $this->allowed_parameters_callback($args),
+            fn($args) => $this->allowed_parameters_callback($args),
             self::PAGE_SLUG,
             'youtube_middleware_general_section',
             [
-            'label_for' => self::FIELD_ALLOWED_PARAMETERS,
-            'class' => 'youtube-middleware-allowed-parameters-field',
-      ]
+                'label_for' => self::FIELD_ALLOWED_PARAMETERS,
+                'class' => 'youtube-middleware-allowed-parameters-field',
+            ],
         );
 
         add_settings_field(
             self::FIELD_PARAM_KEY_VALUE_PAIRS,
             'Parameter Restrictions',
-            fn ($args) => $this->param_key_value_pairs_callback($args),
+            fn($args) => $this->param_key_value_pairs_callback($args),
             self::PAGE_SLUG,
             'youtube_middleware_general_section',
             [
-            'label_for' => self::FIELD_PARAM_KEY_VALUE_PAIRS,
-            'class' => 'youtube-middleware-param-key-value-pairs-field',
-      ]
+                'label_for' => self::FIELD_PARAM_KEY_VALUE_PAIRS,
+                'class' => 'youtube-middleware-param-key-value-pairs-field',
+            ],
         );
     }
 
@@ -176,7 +176,7 @@ class YouTubeMiddleware
     /**
      * Renders the input field for the YouTube API Key.
      *
-     * @param array $args Arguments passed from add_settings_field.
+     * @param mixed $args Arguments passed from add_settings_field.
      * @return void
      */
     private function api_key_callback($args)
@@ -188,7 +188,7 @@ class YouTubeMiddleware
     /**
      * Renders the checkboxes for enabled API endpoints.
      *
-     * @param array $args Arguments passed from add_settings_field.
+     * @param mixed $args Arguments passed from add_settings_field.
      * @return void
      */
     private function enabled_endpoints_callback($args)
@@ -200,7 +200,7 @@ class YouTubeMiddleware
     /**
      * Renders the input fields for user-defined allowed parameters.
      *
-     * @param array $args Arguments passed from add_settings_field.
+     * @param mixed $args Arguments passed from add_settings_field.
      * @return void
      */
     private function allowed_parameters_callback($args)
@@ -212,7 +212,7 @@ class YouTubeMiddleware
     /**
      * Renders the input fields for user-defined key-value pairs.
      *
-     * @param array $args Arguments passed from add_settings_field.
+     * @param mixed $args Arguments passed from add_settings_field.
      * @return void
      */
     private function param_key_value_pairs_callback($args)
@@ -225,11 +225,15 @@ class YouTubeMiddleware
      * Sanitization callback for the plugin settings.
      * This function is called when the settings are saved.
      *
-     * @param array $input The unsanitized array of input values from the form.
-     * @return array The sanitized array of values.
+     * @param mixed $input The unsanitized array of input values from the form.
+     * @return array<string, mixed> The sanitized array of values.
      */
     private function sanitize_settings_callback($input)
     {
+        if (! is_array($input)) {
+            return [];
+        }
+
         $new_input = [];
 
         // Sanitize the API key field
@@ -267,8 +271,8 @@ class YouTubeMiddleware
                     $sanitized_value = sanitize_text_field($pair['value']);
                     if (! empty($sanitized_key)) { // Only save if key is not empty
                         $new_input[ self::FIELD_PARAM_KEY_VALUE_PAIRS ][] = [
-                          'key'   => $sanitized_key,
-                          'value' => $sanitized_value,
+                            'key'   => $sanitized_key,
+                            'value' => $sanitized_value,
                         ];
                     }
                 }
@@ -303,12 +307,12 @@ class YouTubeMiddleware
             }
 
             register_rest_route('youtube-middleware/v1', '/' . $endpoint, [
-              'methods' => 'GET',
-              'callback' => fn ($request) => $this->get_list_results($endpoint, $request),
-              'permission_callback' => '__return_true', // public
-              'args' => array_merge(
-                  $this->get_param_defs(),
-              ),
+                'methods' => 'GET',
+                'callback' => fn($request) => $this->get_list_results($endpoint, $request),
+                'permission_callback' => '__return_true', // public
+                'args' => array_merge(
+                    $this->get_param_defs(),
+                ),
             ]);
         }
     }
@@ -318,11 +322,19 @@ class YouTubeMiddleware
      * Queries the YouTube Data API v3 endpoints via GET (list).
      *
      * @param  string          $endpoint The base googleapis.com/youtube/v3 API endpoint to query, e.g. "search"
-     * @param  WP_REST_Request $request  The request object.
+     * @param  mixed           $request  The request object.
      * @return WP_REST_Response|WP_Error
      */
     private function get_list_results($endpoint, $request)
     {
+        if (! $request instanceof WP_REST_Request) {
+            return new WP_Error(
+                'youtube_middleware_invalid_input',
+                'Invalid input to get_list_results',
+                [ 'status' => '500' ],
+            );
+        }
+
         $all_params = $this->parse_params($request);
         if (is_wp_error($all_params)) {
             return $all_params;
@@ -330,7 +342,7 @@ class YouTubeMiddleware
 
         $cache_duration = $all_params[ 'cacheDuration' ];
         $timeout = $all_params[ 'timeout' ];
-        $args = $all_params[ '_args' ];
+        $args = $all_params[ 'args' ];
 
         // Check if we have a cached result
         $cache_key = 'youtube_middleware_' . md5($endpoint . json_encode($args));
@@ -343,10 +355,10 @@ class YouTubeMiddleware
         $api_url = add_query_arg($args, $base_url);
 
         $response = wp_remote_get($api_url, [
-          'timeout' => $timeout,
-          'headers' => [
-            'referer' => home_url()
-          ]
+            'timeout' => $timeout,
+            'headers' => [
+                'referer' => home_url(),
+            ],
         ]);
         $http_code = wp_remote_retrieve_response_code($response);
 
@@ -355,9 +367,9 @@ class YouTubeMiddleware
                 'youtube_api_request_failed',
                 sprintf(
                     'YouTube API request failed: %s',
-                    $response->get_error_message()
+                    $response->get_error_message(),
                 ),
-                [ 'status' => $http_code ]
+                [ 'status' => $http_code ],
             );
         }
 
@@ -371,7 +383,7 @@ class YouTubeMiddleware
             if (! empty($data['error']['message'])) {
                 $error_message = sprintf(
                     'YouTube API returned an error: %s',
-                    sanitize_text_field($data['error']['message'])
+                    sanitize_text_field($data['error']['message']),
                 );
             }
 
@@ -380,7 +392,7 @@ class YouTubeMiddleware
                     $error_details[] = sprintf(
                         'Reason: %s, Domain: %s',
                         sanitize_text_field($error['reason'] ?? ''),
-                        sanitize_text_field($error['domain'] ?? '')
+                        sanitize_text_field($error['domain'] ?? ''),
                     );
                 }
             }
@@ -389,10 +401,10 @@ class YouTubeMiddleware
                 'youtube_api_response_error',
                 $error_message,
                 [
-                'status' => $http_code,
-                'details' => $error_details,
-                'raw_response' => $body, // Include raw response for debugging
-        ]
+                    'status' => $http_code,
+                    'details' => $error_details,
+                    'raw_response' => $body, // Include raw response for debugging
+                ],
             );
         }
 
@@ -401,12 +413,12 @@ class YouTubeMiddleware
                 'youtube_api_json_decode_error',
                 sprintf(
                     'Failed to decode YouTube API response: %s',
-                    json_last_error_msg()
+                    json_last_error_msg(),
                 ),
                 [
-                'status' => 500,
-                'raw_response' => $body,
-        ]
+                    'status' => 500,
+                    'raw_response' => $body,
+                ],
             );
         }
 
@@ -432,7 +444,7 @@ class YouTubeMiddleware
     /**
      * Retrieves the enabled API endpoints from the settings.
      *
-     * @return array
+     * @return array<string, number>
      */
     private function get_enabled_endpoints()
     {
@@ -443,7 +455,7 @@ class YouTubeMiddleware
     /**
      * Retrieves the user-defined list of allowed parameters pairs from the settings.
      *
-     * @return array
+     * @return string[]
      */
     private function get_allowed_parameters()
     {
@@ -454,7 +466,7 @@ class YouTubeMiddleware
     /**
      * Retrieves the user-defined parameter restrictions key-value pairs from the settings.
      *
-     * @return array
+     * @return array<number, array{ key: string, value: string }>
      */
     private function get_param_key_value_pairs()
     {
@@ -465,7 +477,7 @@ class YouTubeMiddleware
     /**
      * Retrieves the user-defined parameter restrictions as a flat array.
      *
-     * @return array
+     * @return array<string, string>
      */
     private function get_param_restrictions()
     {
@@ -480,31 +492,31 @@ class YouTubeMiddleware
     /**
      * Defines our parameters for all the /youtube/v1/REST endpoints.
      *
-     * @return array An array of parameter definitions.
+     * @return array< string, array<string, mixed> >  An array of parameter definitions.
      */
     private function get_param_defs()
     {
         return [
-          'key' => [
-            'description' => __('The API key. If missing, uses the globally saved one.', 'youtube-middleware'),
-            'type' => 'string',
-            'sanitize_callback' => 'sanitize_text_field',
-            'required' => false,
-          ],
-          'cacheDuration' => [
-            'description' => __("The duration in seconds to cache the results for. Only relevant if there's no cached result. Set to 0 to disable cache. (default: 30 minutes).", 'youtube-middleware'),
-            'type' => 'integer',
-            'default' => MINUTE_IN_SECONDS * 30,
-            'sanitize_callback' => 'absint',
-            'required' => false,
-          ],
-          'timeout' => [
-            'description' => __('Request timeout in seconds (default: 10 seconds)', 'youtube-middleware'),
-            'type' => 'integer',
-            'default' => 10,
-            'sanitize_callback' => 'absint',
-            'required' => false,
-          ],
+            'key' => [
+                'description' => __('The API key. If missing, uses the globally saved one.', 'youtube-middleware'),
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'required' => false,
+            ],
+            'cacheDuration' => [
+                'description' => __("The duration in seconds to cache the results for. Only relevant if there's no cached result. Set to 0 to disable cache. (default: 30 minutes).", 'youtube-middleware'),
+                'type' => 'integer',
+                'default' => MINUTE_IN_SECONDS * 30,
+                'sanitize_callback' => 'absint',
+                'required' => false,
+            ],
+            'timeout' => [
+                'description' => __('Request timeout in seconds (default: 10 seconds)', 'youtube-middleware'),
+                'type' => 'integer',
+                'default' => 10,
+                'sanitize_callback' => 'absint',
+                'required' => false,
+            ],
         ];
     }
 
@@ -512,18 +524,20 @@ class YouTubeMiddleware
      * Parses the common parameters for all the /youtube/v1/REST endpoints.
      *
      * @param  WP_REST_Request $request The request object.
-     * @return { cacheDuration: int, timeout: int, args: array }|WP_Error
+     * @return array{ cacheDuration: int, timeout: int, args: array<string, mixed> }|WP_Error
      */
     private function parse_params($request)
     {
         $query_params = $request->get_query_params();
 
-        $grouped_result = [
-          'cacheDuration' => MINUTE_IN_SECONDS * 30,
-          'timeout' => 10,
-          '_args' => [
+        /** @var array{ cacheDuration: int, timeout: int } $known_args */
+        $known_args = [
+            'cacheDuration' => MINUTE_IN_SECONDS * 30,
+            'timeout' => 10,
+        ];
+
+        $extra_args = [
             'key' => $this->get_api_key(),
-          ],
         ];
 
         foreach ($query_params as $name => $value) {
@@ -531,14 +545,18 @@ class YouTubeMiddleware
                 continue;
             }
 
-            if (array_key_exists($name, $grouped_result)) {
-                $grouped_result[ $name ] = $value;
+            if (array_key_exists($name, $known_args)) {
+                // cacheDuration or timeout
+                if (is_numeric($value)) {
+                    $known_args[ $name ] = intval($value);
+                }
             } else {
+                // extra args
                 if (! $this->is_param_allowed($name)) {
                     return new WP_Error(
                         'youtube_middleware_forbidden_param',
                         'Forbidden parameter',
-                        [ 'status' => '400' ]
+                        [ 'status' => '400' ],
                     );
                 }
 
@@ -546,15 +564,22 @@ class YouTubeMiddleware
                     return new WP_Error(
                         'youtube_middleware_forbidden_value',
                         'Forbidden value for parameter',
-                        [ 'status' => '400' ]
+                        [ 'status' => '400' ],
                     );
                 }
 
-                $grouped_result[ '_args' ][ $name ] = $value;
+                $extra_args[ $name ] = $value;
             }
         }
 
-        return $grouped_result;
+        /** @var array<string, mixed> $args_for_phpstan */
+        $args_for_phpstan = $extra_args;
+
+        return [
+            'cacheDuration' => $known_args['cacheDuration'],
+            'timeout' => $known_args['timeout'],
+            'args' => $args_for_phpstan,
+        ];
     }
 
     /**
@@ -575,7 +600,7 @@ class YouTubeMiddleware
      * Validates a comma-separated input against a comma-separated list of allowed values.
      *
      * @param string $param The parameter name.
-     * @param string $input The user-supplied value.
+     * @param mixed  $input The user-supplied value.
      *
      * @return bool
      */
@@ -593,6 +618,10 @@ class YouTubeMiddleware
 
         if (! $allowed_values) { // none allowed
             return false;
+        }
+
+        if (! $given_values) {
+            return true;
         }
 
         $invalid = array_diff($given_values, $allowed_values);

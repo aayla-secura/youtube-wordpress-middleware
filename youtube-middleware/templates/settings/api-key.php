@@ -3,7 +3,7 @@
  * @package YouTube-Middleware
  */
 
-if (! defined('ABSPATH') || ! isset($api_key) || ! isset($args)) {
+if (! defined('ABSPATH') || ! isset($api_key) || ! is_string($api_key) || ! isset($args) || ! is_array($args)) {
     die; // Exit if accessed directly
 }
 
@@ -12,7 +12,7 @@ printf(
     esc_attr($args['label_for']),
     esc_attr(YouTubeMiddleware::OPTION_NAME),
     esc_attr(YouTubeMiddleware::FIELD_API_KEY),
-    esc_attr($api_key)
+    esc_attr($api_key),
 );
 ?>
 <p class="description">

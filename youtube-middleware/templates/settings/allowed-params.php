@@ -3,7 +3,7 @@
  * @package YouTube-Middleware
  */
 
-if (! defined('ABSPATH') || ! isset($allowed_params) || ! isset($args)) {
+if (! defined('ABSPATH') || ! isset($allowed_params) || ! is_array($allowed_params) || ! isset($args) || ! is_array($args)) {
     die; // Exit if accessed directly
 }
 
